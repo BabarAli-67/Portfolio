@@ -17,12 +17,39 @@ export const profile = {
   ],
   summary:
     'Computer Science graduate and Full-Stack Engineer specializing in the MERN stack, RESTful API design, and AI/ML service integration (Gemini, YOLOv8, OCR). I built and shipped Hawalay — an AI-powered lost-and-found platform — end-to-end, from system architecture through deployment, alongside production client work in React and Node.js.',
+  avatar: '/avatar.jpeg',
   links: {
     github: 'https://github.com/BabarAli-67',
     linkedin: 'https://linkedin.com/in/babarali92',
+    x: 'https://x.com/babarali_dev',
+    reddit: 'https://www.reddit.com/user/babarali_dev/',
+    quora: 'https://www.quora.com/profile/Babar-Ali-2694',
     email: 'mailto:babarali36912@gmail.com',
   },
 }
+
+// Ordered social row used by Hero, Contact, and Footer.
+export const socials = [
+  { id: 'github', label: 'GitHub', href: 'https://github.com/BabarAli-67' },
+  { id: 'linkedin', label: 'LinkedIn', href: 'https://linkedin.com/in/babarali92' },
+  { id: 'x', label: 'X', href: 'https://x.com/babarali_dev' },
+  { id: 'reddit', label: 'Reddit', href: 'https://www.reddit.com/user/babarali_dev/' },
+  { id: 'quora', label: 'Quora', href: 'https://www.quora.com/profile/Babar-Ali-2694' },
+  { id: 'email', label: 'Email', href: 'mailto:babarali36912@gmail.com' },
+]
+
+// Tech tiles for the stack.config.ts showcase card (Technical Arsenal).
+export const stackGrid = [
+  { label: 'Node.js', accent: 'emerald' },
+  { label: 'React', accent: 'cyan' },
+  { label: 'MongoDB', accent: 'emerald' },
+  { label: 'Express', accent: 'blue' },
+  { label: 'Gemini', accent: 'violet' },
+  { label: 'FastAPI', accent: 'emerald' },
+  { label: 'Next.js', accent: 'cyan' },
+  { label: 'Docker', accent: 'blue' },
+  { label: 'YOLOv8', accent: 'pink' },
+]
 
 export const stats = [
   { value: 4, suffix: '+', label: 'Shipped Products' },
@@ -130,7 +157,7 @@ export const projects = [
     tagline: 'B2C Logistics & Delivery Tracking',
     status: 'Production Platform',
     featured: false,
-    categories: ['Full-Stack', 'Backend'],
+    categories: ['Full-Stack'],
     stack: ['MERN', 'Tailwind CSS', 'JWT', 'Zod'],
     accent: 'cyan',
     description:
@@ -176,7 +203,7 @@ export const projects = [
     tagline: 'Video Streaming & Social Platform',
     status: 'In Progress',
     featured: false,
-    categories: ['Full-Stack', 'Backend'],
+    categories: ['Full-Stack'],
     stack: ['MERN', 'Cloudinary', 'JWT'],
     accent: 'violet',
     description:
@@ -195,7 +222,12 @@ export const projects = [
   },
 ]
 
-export const projectFilters = ['All', 'AI/ML', 'Full-Stack', 'Backend', 'Frontend']
+export const projectFilters = [
+  { value: 'All', label: 'All' },
+  { value: 'Full-Stack', label: 'Full-Stack' },
+  { value: 'AI/ML', label: 'AI / ML' },
+  { value: 'Frontend', label: 'Frontend' },
+]
 
 export const experience = [
   {
@@ -223,6 +255,20 @@ export const experience = [
       'Converted Figma/PSD designs into pixel-accurate, reusable WordPress themes using custom PHP template hierarchies and plugin integrations.',
       'Delivered production-ready client sites through a full requirements-to-QA workflow.',
     ],
+  },
+]
+
+export const testimonials = [
+  {
+    id: 'alhadid',
+    quote:
+      'Working with Babar Ali has been an excellent experience. He is highly professional, knowledgeable, and committed to delivering high-quality work. He understands requirements well, communicates effectively, and always goes the extra mile to ensure the project is completed successfully. I highly recommend him for any software development project.',
+    name: 'Muhammad Shahbaz',
+    company: 'AL HADID International',
+    website: 'https://alhadidtec.com',
+    websiteLabel: 'alhadidtec.com',
+    avatar: '/shahbaz.jpeg',
+    accent: 'blue',
   },
 ]
 

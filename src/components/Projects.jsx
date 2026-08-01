@@ -257,7 +257,12 @@ export default function Projects() {
       <Reveal>
         <div className="mb-10 flex flex-wrap gap-2.5">
           {projectFilters.map((f) => (
-            <FilterButton key={f} label={f} active={filter === f} onClick={() => setFilter(f)} />
+            <FilterButton
+              key={f.value}
+              label={f.label}
+              active={filter === f.value}
+              onClick={() => setFilter(f.value)}
+            />
           ))}
         </div>
       </Reveal>

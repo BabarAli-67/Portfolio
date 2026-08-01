@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Check, Github, Linkedin, Loader2, Mail, MapPin, Phone, Send } from 'lucide-react'
+import { Check, Loader2, Mail, MapPin, Phone, Send } from 'lucide-react'
 import SectionHeading from './SectionHeading'
 import Reveal from './Reveal'
 import MagneticButton from './MagneticButton'
+import SocialLinks from './SocialLinks'
 import { profile } from '../data/resume'
 
 function Field({ label, name, type = 'text', value, onChange, textarea, required }) {
@@ -113,23 +114,7 @@ export default function Contact() {
               })}
             </div>
 
-            <div className="mt-8 flex gap-3">
-              {[
-                { icon: Github, href: profile.links.github, label: 'GitHub' },
-                { icon: Linkedin, href: profile.links.linkedin, label: 'LinkedIn' },
-              ].map(({ icon: Icon, href, label }) => (
-                <a
-                  key={label}
-                  href={href}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label={label}
-                  className="flex h-12 flex-1 items-center justify-center gap-2 rounded-2xl border border-border text-muted transition-all duration-300 hover:-translate-y-0.5 hover:border-neon-violet/50 hover:text-neon-violet"
-                >
-                  <Icon className="h-4 w-4" /> {label}
-                </a>
-              ))}
-            </div>
+            <SocialLinks variant="chip" exclude={['email']} className="mt-8" />
           </div>
         </Reveal>
 

@@ -6,6 +6,8 @@ import Hero from './components/Hero'
 import About from './components/About'
 import Projects from './components/Projects'
 import Experience from './components/Experience'
+import Testimonials from './components/Testimonials'
+import Education from './components/Education'
 import Contact from './components/Contact'
 import Footer from './components/Footer'
 
@@ -15,11 +17,11 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen">
-      {/* Interactive physics background + subtle grid overlay */}
+      {/* Background layers — sit above body fill, below all UI */}
       <ParticleCanvas />
       <div
         aria-hidden="true"
-        className="pointer-events-none fixed inset-0 -z-10 bg-grid-lines bg-[size:60px_60px] opacity-40 [mask-image:radial-gradient(ellipse_at_center,#000_20%,transparent_75%)]"
+        className="pointer-events-none fixed inset-0 z-0 bg-grid-lines bg-[size:60px_60px] opacity-30 [mask-image:radial-gradient(ellipse_at_center,#000_20%,transparent_75%)]"
       />
 
       {/* Cursor glow + dot */}
@@ -31,17 +33,22 @@ export default function App() {
         className="fixed inset-x-0 top-0 z-[70] h-0.5 origin-left bg-gradient-to-r from-neon-cyan via-neon-violet to-neon-emerald"
       />
 
-      <Navbar />
+      {/* All page content above the particle field */}
+      <div className="relative z-10">
+        <Navbar />
 
-      <main>
-        <Hero />
-        <About />
-        <Projects />
-        <Experience />
-        <Contact />
-      </main>
+        <main>
+          <Hero />
+          <About />
+          <Projects />
+          <Experience />
+          <Testimonials />
+          <Education />
+          <Contact />
+        </main>
 
-      <Footer />
+        <Footer />
+      </div>
     </div>
   )
 }

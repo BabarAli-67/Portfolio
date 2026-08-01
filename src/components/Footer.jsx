@@ -1,5 +1,6 @@
-import { ArrowUp, Github, Linkedin, Mail, Terminal } from 'lucide-react'
+import { ArrowUp, Terminal } from 'lucide-react'
 import MagneticButton from './MagneticButton'
+import SocialLinks from './SocialLinks'
 import { profile } from '../data/resume'
 
 export default function Footer() {
@@ -22,27 +23,8 @@ export default function Footer() {
           </p>
         </div>
 
-        {/* Socials */}
-        <div className="flex items-center gap-3">
-          {[
-            { icon: Github, href: profile.links.github, label: 'GitHub' },
-            { icon: Linkedin, href: profile.links.linkedin, label: 'LinkedIn' },
-            { icon: Mail, href: profile.links.email, label: 'Email' },
-          ].map(({ icon: Icon, href, label }) => (
-            <a
-              key={label}
-              href={href}
-              target={href.startsWith('http') ? '_blank' : undefined}
-              rel="noreferrer"
-              aria-label={label}
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-border text-muted transition-all duration-300 hover:-translate-y-0.5 hover:border-neon-cyan/50 hover:text-neon-cyan"
-            >
-              <Icon className="h-4 w-4" />
-            </a>
-          ))}
-        </div>
+        <SocialLinks itemClassName="h-10 w-10" />
 
-        {/* Back to top */}
         <MagneticButton onClick={scrollTop} variant="ghost" strength={0.5} aria-label="Back to top">
           Back to top <ArrowUp className="h-4 w-4" />
         </MagneticButton>

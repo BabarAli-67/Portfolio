@@ -28,7 +28,14 @@ export default function ParticleCanvas() {
     let raf = 0
 
     const mouse = { x: -9999, y: -9999, px: -9999, py: -9999, speed: 0 }
-    const COLORS = ['#22D3EE', '#A855F7', '#3B82F6', '#34D399']
+    const COLORS = ['#22D3EE', '#A855F7', '#3B82F6', '#34D399', '#67E8F9']
+
+    // Tunables — dense interactive web across the viewport.
+    const LINK_DIST = 170
+    const MOUSE_RADIUS = 220
+    const NODE_ALPHA = 0.88
+    const LINK_BASE_ALPHA = 0.38
+    const LINK_CURSOR_ALPHA = 0.78
 
     function resize() {
       width = canvas.clientWidth
@@ -41,19 +48,17 @@ export default function ParticleCanvas() {
     }
 
     function seed() {
-      // Density scales with viewport area, capped for performance.
-      const count = Math.min(140, Math.floor((width * height) / 14000))
+      // Richer density: ~1 particle per ~8.5k px², capped for mid-range GPUs.
+      const count = Math.min(240, Math.max(90, Math.floor((width * height) / 8500)))
       particles = Array.from({ length: count }, () => ({
         x: Math.random() * width,
         y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.35,
-        vy: (Math.random() - 0.5) * 0.35,
-        r: Math.random() * 1.8 + 0.6,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4,
+        r: Math.random() * 2.2 + 0.9,
         color: COLORS[(Math.random() * COLORS.length) | 0],
       }))
     }
-
-    const mouseRadius = 150
 
     function step() {
       ctx.clearRect(0, 0, width, height)
@@ -68,10 +73,10 @@ export default function ParticleCanvas() {
         const dx = p.x - mouse.x
         const dy = p.y - mouse.y
         const dist = Math.hypot(dx, dy)
-        if (dist < mouseRadius && dist > 0.01) {
-          const force = (1 - dist / mouseRadius) * (1 + mouse.speed * 0.06)
-          p.vx += (dx / dist) * force * 0.6
-          p.vy += (dy / dist) * force * 0.6
+        if (dist < MOUSE_RADIUS && dist > 0.01) {
+          const force = (1 - dist / MOUSE_RADIUS) * (1 + mouse.speed * 0.07)
+          p.vx += (dx / dist) * force * 0.7
+          p.vy += (dy / dist) * force * 0.7
         }
 
         // Integrate + gentle damping so the field settles after a swipe.
@@ -81,8 +86,8 @@ export default function ParticleCanvas() {
         p.vy *= 0.96
 
         // Keep a minimum drift so it never fully freezes.
-        if (Math.abs(p.vx) < 0.05) p.vx += (Math.random() - 0.5) * 0.05
-        if (Math.abs(p.vy) < 0.05) p.vy += (Math.random() - 0.5) * 0.05
+        if (Math.abs(p.vx) < 0.06) p.vx += (Math.random() - 0.5) * 0.06
+        if (Math.abs(p.vy) < 0.06) p.vy += (Math.random() - 0.5) * 0.06
 
         // Wrap around edges.
         if (p.x < -20) p.x = width + 20
@@ -90,16 +95,27 @@ export default function ParticleCanvas() {
         if (p.y < -20) p.y = height + 20
         if (p.y > height + 20) p.y = -20
 
+        const nearCursor = dist < MOUSE_RADIUS
+        const glow = nearCursor ? 1 - dist / MOUSE_RADIUS : 0
+
+        // Soft halo near the cursor.
+        if (glow > 0.05) {
+          ctx.beginPath()
+          ctx.arc(p.x, p.y, p.r + 4 + glow * 6, 0, Math.PI * 2)
+          ctx.fillStyle = p.color
+          ctx.globalAlpha = glow * 0.22
+          ctx.fill()
+        }
+
         // Draw node.
         ctx.beginPath()
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
+        ctx.arc(p.x, p.y, p.r + glow * 0.8, 0, Math.PI * 2)
         ctx.fillStyle = p.color
-        ctx.globalAlpha = 0.65
+        ctx.globalAlpha = NODE_ALPHA + glow * 0.12
         ctx.fill()
       }
 
       // Constellation links.
-      ctx.globalAlpha = 1
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const a = particles[i]
@@ -107,17 +123,20 @@ export default function ParticleCanvas() {
           const dx = a.x - b.x
           const dy = a.y - b.y
           const d = Math.hypot(dx, dy)
-          if (d < 120) {
-            const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }
-            const nearCursor = Math.hypot(mid.x - mouse.x, mid.y - mouse.y) < mouseRadius
-            ctx.strokeStyle = nearCursor ? '#22D3EE' : '#3B5A8A'
-            ctx.globalAlpha = (1 - d / 120) * (nearCursor ? 0.55 : 0.18)
-            ctx.lineWidth = nearCursor ? 0.9 : 0.5
-            ctx.beginPath()
-            ctx.moveTo(a.x, a.y)
-            ctx.lineTo(b.x, b.y)
-            ctx.stroke()
-          }
+          if (d >= LINK_DIST) continue
+
+          const midX = (a.x + b.x) / 2
+          const midY = (a.y + b.y) / 2
+          const nearCursor = Math.hypot(midX - mouse.x, midY - mouse.y) < MOUSE_RADIUS
+          const fade = 1 - d / LINK_DIST
+
+          ctx.strokeStyle = nearCursor ? '#22D3EE' : '#6B8EC4'
+          ctx.globalAlpha = fade * (nearCursor ? LINK_CURSOR_ALPHA : LINK_BASE_ALPHA)
+          ctx.lineWidth = nearCursor ? 1.25 : 0.7
+          ctx.beginPath()
+          ctx.moveTo(a.x, a.y)
+          ctx.lineTo(b.x, b.y)
+          ctx.stroke()
         }
       }
 
@@ -155,20 +174,21 @@ export default function ParticleCanvas() {
   }, [reduced])
 
   if (reduced) {
-    // Static, calm gradient fallback for reduced-motion users.
     return (
       <div
         aria-hidden="true"
-        className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,rgba(34,211,238,0.08),transparent_55%),radial-gradient(ellipse_at_bottom_right,rgba(168,85,247,0.08),transparent_55%)]"
+        className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(ellipse_at_top,rgba(34,211,238,0.1),transparent_55%),radial-gradient(ellipse_at_bottom_right,rgba(168,85,247,0.1),transparent_55%)]"
       />
     )
   }
 
+  // z-0 (not -z-10): negative z can paint behind the opaque body background
+  // and make the constellation appear missing or washed out.
   return (
     <canvas
       ref={canvasRef}
       aria-hidden="true"
-      className="pointer-events-none fixed inset-0 -z-10 h-full w-full"
+      className="pointer-events-none fixed inset-0 z-0 h-full w-full"
     />
   )
 }
