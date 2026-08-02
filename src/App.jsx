@@ -1,5 +1,5 @@
 import { motion, useScroll, useSpring } from 'framer-motion'
-import ParticleCanvas from './components/ParticleCanvas'
+import DeferredParticles from './components/DeferredParticles'
 import CursorSpotlight from './components/CursorSpotlight'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
@@ -17,23 +17,20 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen">
-      {/* Background layers — sit above body fill, below all UI */}
-      <ParticleCanvas />
+      {/* Particles: client-only + deferred — density/visuals unchanged */}
+      <DeferredParticles />
       <div
         aria-hidden="true"
         className="pointer-events-none fixed inset-0 z-0 bg-grid-lines bg-[size:60px_60px] opacity-30 [mask-image:radial-gradient(ellipse_at_center,#000_20%,transparent_75%)]"
       />
 
-      {/* Cursor glow + dot */}
       <CursorSpotlight />
 
-      {/* Scroll progress bar */}
       <motion.div
         style={{ scaleX: progress }}
         className="fixed inset-x-0 top-0 z-[70] h-0.5 origin-left bg-gradient-to-r from-neon-cyan via-neon-violet to-neon-emerald"
       />
 
-      {/* All page content above the particle field */}
       <div className="relative z-10">
         <Navbar />
 

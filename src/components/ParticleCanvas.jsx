@@ -19,6 +19,7 @@ export default function ParticleCanvas() {
   useEffect(() => {
     if (reduced) return
     const canvas = canvasRef.current
+    if (!canvas) return
     const ctx = canvas.getContext('2d', { alpha: true })
 
     let width = 0
@@ -30,7 +31,7 @@ export default function ParticleCanvas() {
     const mouse = { x: -9999, y: -9999, px: -9999, py: -9999, speed: 0 }
     const COLORS = ['#22D3EE', '#A855F7', '#3B82F6', '#34D399', '#67E8F9']
 
-    // Tunables — dense interactive web across the viewport.
+    // Tunables — dense interactive web across the viewport (unchanged richness).
     const LINK_DIST = 170
     const MOUSE_RADIUS = 220
     const NODE_ALPHA = 0.88
@@ -160,6 +161,12 @@ export default function ParticleCanvas() {
     }
 
     resize()
+    // Soft fade-in after deferred mount (no visual density change).
+    canvas.style.opacity = '0'
+    canvas.style.transition = 'opacity 0.4s ease'
+    requestAnimationFrame(() => {
+      canvas.style.opacity = '1'
+    })
     step()
     window.addEventListener('resize', resize)
     window.addEventListener('mousemove', onMove)
