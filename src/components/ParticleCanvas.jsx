@@ -50,7 +50,7 @@ export default function ParticleCanvas() {
 
     function seed() {
       // Richer density: ~1 particle per ~8.5k px², capped for mid-range GPUs.
-      const count = Math.min(240, Math.max(90, Math.floor((width * height) / 8500)))
+      const count = Math.min(220, Math.max(110, Math.floor((width * height) / 9500)))
       particles = Array.from({ length: count }, () => ({
         x: Math.random() * width,
         y: Math.random() * height,
