@@ -68,11 +68,28 @@
   }
 
   .text-gradient-neon {
+    color: #22d3ee;
     background: linear-gradient(120deg, #22d3ee 0%, #a855f7 55%, #f472b6 100%);
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+  }
+
+  /* Hero typewriter — solid fallback first; gradient only where clip is reliable */
+  .hero-typewriter {
+    color: #22d3ee !important;
+    -webkit-text-fill-color: #22d3ee !important;
+  }
+
+  @media (min-width: 640px) {
+    .hero-typewriter {
+      background: linear-gradient(120deg, #22d3ee 0%, #a855f7 55%, #f472b6 100%);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent !important;
+    }
   }
 
   /* Animated conic border ring used on cards + focus states */

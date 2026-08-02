@@ -55,12 +55,18 @@ export default function Typewriter({ words, className, active = true }) {
   }, [active, reduced])
 
   return (
-    <span className={cn('relative block w-full', className)}>
+    <span className="relative block w-full">
       {/* Invisible sizer — reserves max wrapped height permanently */}
-      <span className="invisible block select-none" aria-hidden="true">
+      <span className={cn('invisible block select-none', className)} aria-hidden="true">
         {longest}
       </span>
-      <span className="absolute inset-x-0 top-0">
+      {/* Color/gradient classes must live on this node — not a parent — or
+          -webkit-text-fill-color:transparent inherits without background-clip
+          and the typed text goes invisible on mobile production builds. */}
+      <span
+        className={cn('absolute inset-x-0 top-0 text-neon-cyan', className)}
+        style={{ color: '#22D3EE' }}
+      >
         {text}
         <span className="ml-0.5 inline-block h-[0.85em] w-[2px] translate-y-[2px] animate-blink bg-neon-cyan align-middle sm:w-[3px]" />
       </span>

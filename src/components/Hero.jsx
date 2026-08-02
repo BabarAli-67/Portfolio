@@ -117,7 +117,7 @@ export default function Hero({ introReady = true }) {
               <Typewriter
                 words={profile.roles}
                 active={introReady}
-                className="text-gradient-neon"
+                className="hero-typewriter"
               />
             </p>
           </motion.div>

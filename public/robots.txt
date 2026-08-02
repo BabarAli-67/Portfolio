@@ -1,0 +1,9 @@
+# https://portfolio-mu-ten-uptxmeti4k.vercel.app/robots.txt
+User-agent: *
+Allow: /
+
+# Block common junk paths if ever added
+Disallow: /api/
+Disallow: /*.json$
+
+Sitemap: https://portfolio-mu-ten-uptxmeti4k.vercel.app/sitemap.xml
