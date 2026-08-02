@@ -61,11 +61,12 @@ function TimelineItem({ index }) {
             <div className="mb-3 font-mono text-[11px] uppercase tracking-widest text-faint">
               Relevant Coursework
             </div>
-            <div className="flex flex-wrap gap-2">
+            {/* Mobile: 2-col compact grid; desktop: original wrap pills */}
+            <div className="grid grid-cols-2 gap-2 md:flex md:flex-wrap md:gap-2">
               {education.coursework.map((c) => (
                 <span
                   key={c}
-                  className="rounded-lg border border-border bg-white/[0.02] px-3 py-1.5 text-xs text-muted"
+                  className="flex min-h-[2.5rem] items-center justify-center rounded-lg border border-border bg-white/[0.02] px-2 py-2 text-center text-[11px] leading-snug text-muted break-words hyphens-auto md:min-h-0 md:justify-start md:px-3 md:py-1.5 md:text-left md:text-xs md:leading-normal"
                 >
                   {c}
                 </span>

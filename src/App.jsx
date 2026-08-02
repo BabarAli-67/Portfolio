@@ -1,3 +1,4 @@
+import { useCallback, useState } from 'react'
 import { motion, useScroll, useSpring } from 'framer-motion'
 import DeferredParticles from './components/DeferredParticles'
 import Preloader from './components/Preloader'
@@ -11,14 +12,18 @@ import Testimonials from './components/Testimonials'
 import Education from './components/Education'
 import Contact from './components/Contact'
 import Footer from './components/Footer'
+import WhatsAppFloat from './components/WhatsAppFloat'
 
 export default function App() {
+  const [introReady, setIntroReady] = useState(false)
+  const handleReveal = useCallback(() => setIntroReady(true), [])
+
   const { scrollYProgress } = useScroll()
   const progress = useSpring(scrollYProgress, { stiffness: 140, damping: 30, mass: 0.3 })
 
   return (
     <div className="relative min-h-screen">
-      <Preloader />
+      <Preloader onReveal={handleReveal} />
 
       {/* Particles warm up under the preloader — density unchanged */}
       <DeferredParticles />
@@ -38,7 +43,7 @@ export default function App() {
         <Navbar />
 
         <main>
-          <Hero />
+          <Hero introReady={introReady} />
           <About />
           <Projects />
           <Experience />
@@ -49,6 +54,8 @@ export default function App() {
 
         <Footer />
       </div>
+
+      <WhatsAppFloat />
     </div>
   )
 }

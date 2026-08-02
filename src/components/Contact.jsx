@@ -7,6 +7,22 @@ import MagneticButton from './MagneticButton'
 import SocialLinks from './SocialLinks'
 import { profile } from '../data/resume'
 
+const WA_NUMBER = '923090123027'
+
+function buildWhatsAppUrl({ name, email, message }) {
+  const text = [
+    'Hi Babar — portfolio inquiry',
+    '',
+    `Name: ${name}`,
+    `Email: ${email}`,
+    '',
+    'Message:',
+    message,
+  ].join('\n')
+
+  return `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(text)}`
+}
+
 function Field({ label, name, type = 'text', value, onChange, textarea, required }) {
   const [focused, setFocused] = useState(false)
   const active = focused || value.length > 0
@@ -54,18 +70,24 @@ export default function Contact() {
   const onSubmit = (e) => {
     e.preventDefault()
     if (status !== 'idle') return
+
+    const name = form.name.trim()
+    const email = form.email.trim()
+    const message = form.message.trim()
+    if (!name || !email || !message) return
+
     setStatus('sending')
-    // Simulate submission physics, then hand off to the user's mail client.
-    setTimeout(() => {
+
+    // Brief success feedback, then open WhatsApp with a pre-filled inquiry.
+    window.setTimeout(() => {
+      const url = buildWhatsAppUrl({ name, email, message })
+      window.open(url, '_blank', 'noopener,noreferrer')
       setStatus('sent')
-      const subject = encodeURIComponent(`Portfolio inquiry from ${form.name || 'a visitor'}`)
-      const body = encodeURIComponent(`${form.message}\n\n— ${form.name} (${form.email})`)
-      window.location.href = `mailto:${profile.email}?subject=${subject}&body=${body}`
-      setTimeout(() => {
+      window.setTimeout(() => {
         setStatus('idle')
         setForm({ name: '', email: '', message: '' })
-      }, 2600)
-    }, 1100)
+      }, 2400)
+    }, 700)
   }
 
   const contactItems = [
@@ -91,25 +113,37 @@ export default function Contact() {
       />
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_1.2fr]">
-        {/* Left: direct contact */}
-        <Reveal>
-          <div className="flex h-full flex-col justify-between rounded-3xl border border-border bg-card/50 p-8 backdrop-blur-sm">
-            <div className="space-y-4">
+        {/* Contact details — after form on mobile; left column on desktop */}
+        <Reveal className="order-2 lg:order-1">
+          <div className="flex h-full flex-col justify-between rounded-3xl border border-border bg-card/50 p-5 backdrop-blur-sm sm:p-8">
+            <div className="space-y-3 sm:space-y-4">
               {contactItems.map(({ icon: Icon, label, href }) => {
+                const isEmail = label.includes('@')
                 const inner = (
-                  <div className="flex items-center gap-4 rounded-2xl border border-border bg-white/[0.02] px-4 py-4 transition-colors duration-300 hover:border-neon-cyan/40">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-neon-cyan/10 text-neon-cyan">
-                      <Icon className="h-5 w-5" />
+                  <div className="flex min-w-0 items-center gap-3 rounded-2xl border border-border bg-white/[0.02] px-3 py-3 transition-colors duration-300 hover:border-neon-cyan/40 sm:gap-4 sm:px-4 sm:py-4">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-neon-cyan/10 text-neon-cyan sm:h-11 sm:w-11">
+                      <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                     </span>
-                    <span className="break-all font-mono text-sm text-muted">{label}</span>
+                    <span
+                      title={label}
+                      className={
+                        isEmail
+                          ? 'min-w-0 flex-1 whitespace-nowrap font-mono text-[11px] tracking-tight text-muted sm:text-sm sm:tracking-normal'
+                          : 'min-w-0 flex-1 break-words font-mono text-xs text-muted sm:break-all sm:text-sm'
+                      }
+                    >
+                      {label}
+                    </span>
                   </div>
                 )
                 return href ? (
-                  <a key={label} href={href} className="block">
+                  <a key={label} href={href} className="block min-w-0">
                     {inner}
                   </a>
                 ) : (
-                  <div key={label}>{inner}</div>
+                  <div key={label} className="min-w-0">
+                    {inner}
+                  </div>
                 )
               })}
             </div>
@@ -118,8 +152,8 @@ export default function Contact() {
           </div>
         </Reveal>
 
-        {/* Right: form */}
-        <Reveal delay={0.1}>
+        {/* Form — first on mobile; right column on desktop */}
+        <Reveal delay={0.1} className="order-1 lg:order-2">
           <form
             onSubmit={onSubmit}
             className="rounded-3xl border border-border bg-card/50 p-8 backdrop-blur-sm"
@@ -146,15 +180,15 @@ export default function Contact() {
               />
             </div>
 
-            <div className="mt-6 flex items-center justify-between gap-4">
-              <p className="font-mono text-xs text-faint">
-                Sends via your mail client — no data stored.
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+              <p className="order-2 font-mono text-[11px] text-faint sm:order-1 sm:text-xs">
+                Opens WhatsApp with your message — no data stored.
               </p>
               <MagneticButton
                 type="submit"
                 variant="primary"
                 strength={0.5}
-                className="min-w-[150px]"
+                className="order-1 w-full px-4 py-2.5 text-xs sm:order-2 sm:w-auto sm:min-w-[150px] sm:px-6 sm:py-3.5 sm:text-sm"
               >
                 <AnimatePresence mode="wait" initial={false}>
                   {status === 'idle' && (

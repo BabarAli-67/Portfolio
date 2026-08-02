@@ -3,13 +3,16 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { Terminal } from 'lucide-react'
 import { profile } from '../data/resume'
 
-const MIN_DURATION_MS = 2300
+const MIN_DURATION_MS = 2800
 
 /**
  * Full-screen branded preloader. Masks hydration + particle canvas warm-up,
  * then fades out once the minimum display time and window readiness are met.
+ *
+ * `onReveal` fires the instant the fade-out begins — Hero animations should
+ * start on that callback so they sync with the exit, not after a lag.
  */
-export default function Preloader() {
+export default function Preloader({ onReveal }) {
   const [visible, setVisible] = useState(true)
   const [progress, setProgress] = useState(0)
 
@@ -17,20 +20,30 @@ export default function Preloader() {
     const start = performance.now()
     let raf = 0
     let finished = false
+    let exitTimer = 0
+    let waitTimer = 0
 
-    // Prevent scroll jump while the overlay is up.
     const prevOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
 
     const tick = (now) => {
       const elapsed = now - start
-      // Ease toward ~92% until ready, then snap to 100% on exit prep.
       const t = Math.min(elapsed / MIN_DURATION_MS, 1)
       const eased = 1 - Math.pow(1 - t, 3)
       setProgress(Math.min(92, Math.round(eased * 92)))
       if (t < 1) raf = requestAnimationFrame(tick)
     }
     raf = requestAnimationFrame(tick)
+
+    const beginExit = () => {
+      if (finished) return
+      finished = true
+      setProgress(100)
+      // Hand off to Hero a beat before the overlay vanishes so the typewriter
+      // interval is already scheduled when the fade starts.
+      onReveal?.()
+      exitTimer = window.setTimeout(() => setVisible(false), 120)
+    }
 
     const tryFinish = () => {
       if (finished) return
@@ -41,40 +54,29 @@ export default function Preloader() {
 
       if (!domReady) return
 
-      window.setTimeout(() => {
-        if (finished) return
-        finished = true
-        setProgress(100)
-        // Brief beat at 100% before fade-out.
-        window.setTimeout(() => setVisible(false), 180)
-      }, remaining)
+      waitTimer = window.setTimeout(beginExit, remaining)
     }
 
-    // Prefer window load; also poll readyState so soft reloads still resolve.
     if (document.readyState === 'complete') {
       tryFinish()
     } else {
       window.addEventListener('load', tryFinish, { once: true })
-      // Fallback if load already fired or hangs on slow assets.
-      const fallback = window.setTimeout(tryFinish, MIN_DURATION_MS + 400)
-      return () => {
-        finished = true
-        cancelAnimationFrame(raf)
-        window.removeEventListener('load', tryFinish)
-        window.clearTimeout(fallback)
-        document.body.style.overflow = prevOverflow
-      }
     }
+
+    // Absolute fallback so a hung asset never traps the overlay.
+    const fallback = window.setTimeout(tryFinish, MIN_DURATION_MS + 600)
 
     return () => {
       finished = true
       cancelAnimationFrame(raf)
       window.removeEventListener('load', tryFinish)
+      window.clearTimeout(fallback)
+      window.clearTimeout(waitTimer)
+      window.clearTimeout(exitTimer)
       document.body.style.overflow = prevOverflow
     }
-  }, [])
+  }, [onReveal])
 
-  // Restore scroll when overlay is gone.
   useEffect(() => {
     if (!visible) document.body.style.overflow = ''
   }, [visible])
@@ -92,7 +94,6 @@ export default function Preloader() {
           transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
           className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-base"
         >
-          {/* Ambient brand glows */}
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(34,211,238,0.08),transparent_55%),radial-gradient(ellipse_at_bottom,rgba(168,85,247,0.07),transparent_50%)]"
@@ -104,7 +105,6 @@ export default function Preloader() {
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
             className="relative flex flex-col items-center gap-8 px-6"
           >
-            {/* Brand mark */}
             <div className="flex items-center gap-3.5">
               <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-neon-cyan to-neon-violet shadow-glow">
                 <Terminal className="h-5 w-5 text-base" strokeWidth={2.5} />
@@ -118,7 +118,6 @@ export default function Preloader() {
               </div>
             </div>
 
-            {/* Progress track */}
             <div className="w-48 sm:w-56">
               <div className="mb-2 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.2em] text-faint">
                 <span>Initializing</span>

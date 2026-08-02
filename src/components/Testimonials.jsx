@@ -45,7 +45,7 @@ function TestimonialCard({ item, index }) {
     <Reveal delay={index * 0.08}>
       <TiltCard max={10} glareAccent={accent} className="h-full">
         <figure
-          className="group relative overflow-hidden rounded-3xl border border-border bg-card/50 p-8 backdrop-blur-sm transition-colors duration-300 hover:border-white/20 md:p-10"
+          className="group relative min-w-0 overflow-hidden rounded-3xl border border-border bg-card/50 p-5 backdrop-blur-sm transition-colors duration-300 hover:border-white/20 sm:p-8 md:p-10"
           style={{ boxShadow: `0 0 50px -24px ${accent}66` }}
         >
           <div
@@ -61,7 +61,7 @@ function TestimonialCard({ item, index }) {
 
           <TiltLayer depth={35}>
             <Quote
-              className="mb-6 h-10 w-10 opacity-80"
+              className="mb-4 h-8 w-8 opacity-80 sm:mb-6 sm:h-10 sm:w-10"
               style={{ color: accent }}
               strokeWidth={1.5}
               aria-hidden="true"
@@ -69,10 +69,10 @@ function TestimonialCard({ item, index }) {
           </TiltLayer>
 
           <TiltLayer depth={25}>
-            <blockquote>
-              <p className="font-heading text-lg leading-relaxed text-ink md:text-xl md:leading-[1.65]">
+            <blockquote className="min-w-0">
+              <p className="font-heading text-base leading-relaxed text-ink break-words sm:text-lg md:text-xl md:leading-[1.65]">
                 <span
-                  className="mr-1 font-display text-4xl leading-none"
+                  className="mr-1 font-display text-3xl leading-none sm:text-4xl"
                   style={{ color: `${accent}99` }}
                   aria-hidden="true"
                 >
@@ -80,7 +80,7 @@ function TestimonialCard({ item, index }) {
                 </span>
                 {item.quote}
                 <span
-                  className="ml-0.5 font-display text-4xl leading-none"
+                  className="ml-0.5 font-display text-3xl leading-none sm:text-4xl"
                   style={{ color: `${accent}99` }}
                   aria-hidden="true"
                 >
@@ -90,28 +90,39 @@ function TestimonialCard({ item, index }) {
             </blockquote>
           </TiltLayer>
 
-          <TiltLayer depth={45} className="mt-8 border-t border-border pt-6">
-            <figcaption className="flex flex-wrap items-center gap-4">
-              <ClientAvatar name={item.name} src={item.avatar} accent={accent} />
-              <div className="min-w-0 flex-1">
-                <div className="font-heading text-base font-semibold text-ink md:text-lg">
-                  {item.name}
-                </div>
-                <div className="mt-0.5 text-sm text-muted">
-                  Representing{' '}
-                  <span className="font-medium" style={{ color: accent }}>
-                    {item.company}
-                  </span>
+          <TiltLayer depth={45} className="mt-6 border-t border-border pt-5 sm:mt-8 sm:pt-6">
+            <figcaption className="flex flex-col gap-4 md:flex-row md:items-center md:gap-4">
+              {/* Identity row: avatar + text */}
+              <div className="flex min-w-0 items-start gap-3 sm:items-center sm:gap-4 md:flex-1">
+                <ClientAvatar name={item.name} src={item.avatar} accent={accent} />
+                <div className="min-w-0 flex-1">
+                  <div
+                    className="font-heading text-sm font-semibold leading-snug break-words sm:text-base md:text-lg"
+                    style={{ color: '#ffffff', WebkitTextFillColor: '#ffffff' }}
+                  >
+                    {item.name}
+                  </div>
+                  <div
+                    className="mt-1 text-sm leading-snug break-words"
+                    style={{ color: '#d1d5db', WebkitTextFillColor: '#d1d5db' }}
+                  >
+                    Representing{' '}
+                    <span className="font-medium" style={{ color: accent, WebkitTextFillColor: accent }}>
+                      {item.company}
+                    </span>
+                  </div>
                 </div>
               </div>
+
+              {/* Website — full width on mobile, inline on desktop */}
               <a
                 href={item.website}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-white/[0.02] px-4 py-2.5 font-mono text-xs text-muted transition-all duration-300 hover:-translate-y-0.5 hover:border-neon-cyan/50 hover:text-neon-cyan"
+                className="inline-flex w-full shrink-0 items-center justify-center gap-1.5 rounded-xl border border-border bg-white/[0.02] px-4 py-2.5 font-mono text-xs text-muted transition-all duration-300 hover:-translate-y-0.5 hover:border-neon-cyan/50 hover:text-neon-cyan md:w-auto"
               >
                 {item.websiteLabel}
-                <ArrowUpRight className="h-3.5 w-3.5" />
+                <ArrowUpRight className="h-3.5 w-3.5 shrink-0" />
               </a>
             </figcaption>
           </TiltLayer>
@@ -123,7 +134,7 @@ function TestimonialCard({ item, index }) {
 
 export default function Testimonials() {
   return (
-    <section id="testimonials" className="relative mx-auto max-w-5xl scroll-mt-24 px-6 py-24 md:py-32">
+    <section id="testimonials" className="relative mx-auto max-w-5xl scroll-mt-24 px-5 py-20 sm:px-6 sm:py-24 md:py-32">
       <SectionHeading
         eyebrow="Testimonials"
         title={

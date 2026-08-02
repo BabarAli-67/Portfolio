@@ -1,26 +1,34 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { cn } from '../lib/utils'
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion'
 
-// Cycling typewriter. On reduced motion it simply shows the first phrase.
-export default function Typewriter({ words, className }) {
+/**
+ * Layout-stable typewriter: an invisible sizer locks height to the longest
+ * phrase so typing/deleting never resizes the Hero (fixes mobile scroll jump).
+ */
+export default function Typewriter({ words, className, active = true }) {
   const reduced = usePrefersReducedMotion()
   const [index, setIndex] = useState(0)
   const [text, setText] = useState('')
   const [deleting, setDeleting] = useState(false)
 
+  const longest = useMemo(
+    () => words.reduce((a, b) => (a.length >= b.length ? a : b), words[0] ?? ''),
+    [words]
+  )
+
   useEffect(() => {
     if (reduced) {
-      setText(words[0])
+      setText(words[0] ?? '')
       return
     }
-    const current = words[index % words.length]
-    let delay = deleting ? 45 : 90
+    if (!active) return
 
-    if (!deleting && text === current) {
-      delay = 1600
-    } else if (deleting && text === '') {
-      delay = 400
-    }
+    const current = words[index % words.length]
+    let delay = text === '' && !deleting ? 0 : deleting ? 40 : 70
+
+    if (!deleting && text === current) delay = 1400
+    else if (deleting && text === '') delay = 280
 
     const t = setTimeout(() => {
       if (!deleting && text === current) {
@@ -36,12 +44,26 @@ export default function Typewriter({ words, className }) {
     }, delay)
 
     return () => clearTimeout(t)
-  }, [text, deleting, index, words, reduced])
+  }, [text, deleting, index, words, reduced, active])
+
+  useEffect(() => {
+    if (!active && !reduced) {
+      setText('')
+      setDeleting(false)
+      setIndex(0)
+    }
+  }, [active, reduced])
 
   return (
-    <span className={className}>
-      {text}
-      <span className="ml-0.5 inline-block h-[0.9em] w-[3px] translate-y-[2px] animate-blink bg-neon-cyan align-middle" />
+    <span className={cn('relative block w-full', className)}>
+      {/* Invisible sizer — reserves max wrapped height permanently */}
+      <span className="invisible block select-none" aria-hidden="true">
+        {longest}
+      </span>
+      <span className="absolute inset-x-0 top-0">
+        {text}
+        <span className="ml-0.5 inline-block h-[0.85em] w-[2px] translate-y-[2px] animate-blink bg-neon-cyan align-middle sm:w-[3px]" />
+      </span>
     </span>
   )
 }

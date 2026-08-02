@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-  ArrowUpRight,
   Circle,
   Database,
   ExternalLink,
@@ -18,6 +17,71 @@ import { useMagnetic } from '../hooks/useMagnetic'
 import { pipeline, projectFilters, projects } from '../data/resume'
 import { getAccent } from '../lib/utils'
 
+const DESC_LIMIT = 200
+const DESC_COLOR = '#8593AC' // theme muted — force visible fill
+
+/**
+ * Truncates project body (paragraph + optional bullets) to DESC_LIMIT chars.
+ * Bullets stay hidden until expanded; Code/tags/pipeline live outside this component.
+ */
+function ProjectDescription({ text, highlights = [], accent, className = '' }) {
+  const [expanded, setExpanded] = useState(false)
+
+  const bulletChars = useMemo(
+    () => highlights.reduce((n, h) => n + h.length, 0),
+    [highlights]
+  )
+  const needsToggle = text.length > DESC_LIMIT || bulletChars > 0
+
+  const shownDesc = useMemo(() => {
+    if (expanded) return text
+    if (text.length > DESC_LIMIT) return `${text.slice(0, DESC_LIMIT).trimEnd()}…`
+    return text
+  }, [text, expanded])
+
+  return (
+    <div className={className}>
+      <p
+        className="text-sm leading-relaxed break-words sm:text-base sm:leading-relaxed"
+        style={{ color: DESC_COLOR, WebkitTextFillColor: DESC_COLOR }}
+      >
+        {shownDesc}
+      </p>
+
+      {expanded && highlights.length > 0 && (
+        <ul className="mt-4 space-y-3 sm:mt-5">
+          {highlights.map((h) => (
+            <li key={h} className="flex gap-3 text-sm leading-relaxed">
+              <span
+                className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full"
+                style={{ background: accent, boxShadow: `0 0 10px ${accent}` }}
+              />
+              <span
+                className="min-w-0 break-words"
+                style={{ color: DESC_COLOR, WebkitTextFillColor: DESC_COLOR }}
+              >
+                {h}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {needsToggle && (
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          aria-expanded={expanded}
+          className="mt-2 font-heading text-sm font-semibold transition-opacity hover:opacity-90"
+          style={{ color: accent }}
+        >
+          {expanded ? 'Read Less' : 'Read More'}
+        </button>
+      )}
+    </div>
+  )
+}
+
 // Explicit map keeps lucide tree-shakeable (vs. a namespace import).
 const PIPELINE_ICONS = { Upload, ScanEye, TextSelect, Sparkles, Database }
 
@@ -30,7 +94,7 @@ function FilterButton({ label, active, onClick }) {
       onMouseMove={handleMove}
       onMouseLeave={handleLeave}
       style={{ x, y }}
-      className={`rounded-full border px-4 py-2 font-heading text-sm font-medium transition-colors duration-300 ${
+      className={`shrink-0 rounded-full border px-3.5 py-2 font-heading text-xs font-medium transition-colors duration-300 sm:px-4 sm:text-sm ${
         active
           ? 'border-neon-cyan/60 bg-neon-cyan/10 text-neon-cyan'
           : 'border-border text-muted hover:text-ink'
@@ -43,15 +107,63 @@ function FilterButton({ label, active, onClick }) {
 
 function Pipeline() {
   return (
-    <div className="relative mt-8 rounded-2xl border border-border bg-base/40 p-6">
-      <div className="mb-5 font-mono text-[11px] uppercase tracking-widest text-faint">
-        Hybrid AI Matching Pipeline
+    <div className="relative mt-4 rounded-2xl border border-border bg-base/40 p-4 sm:mt-8 sm:p-6">
+      <div className="mb-3 flex items-center justify-between gap-2 sm:mb-5">
+        <div className="font-mono text-[11px] uppercase tracking-widest text-faint">
+          Hybrid AI Matching Pipeline
+        </div>
+        <div className="font-mono text-[9px] uppercase tracking-wider text-faint sm:hidden">
+          Swipe →
+        </div>
       </div>
-      <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-center">
+
+      {/* Mobile: horizontal snap carousel */}
+      <div className="relative -mx-1 sm:hidden">
+        <div
+          className="flex snap-x snap-mandatory gap-0 overflow-x-auto px-1 pb-2 scrollbar-hide [mask-image:linear-gradient(90deg,transparent,#000_6%,#000_94%,transparent)]"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
+          {pipeline.map((step, i) => {
+            const Icon = PIPELINE_ICONS[step.icon] ?? Circle
+            return (
+              <div key={step.title} className="flex shrink-0 snap-start items-center">
+                <div className="flex w-[4.75rem] flex-col items-center gap-1.5">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-white/[0.03]">
+                    <Icon className="h-4 w-4 text-neon-emerald" />
+                  </span>
+                  <div className="text-center">
+                    <div className="font-heading text-[11px] font-semibold leading-tight text-ink">
+                      {step.title}
+                    </div>
+                    <div className="font-mono text-[8px] uppercase tracking-wider text-faint">
+                      {step.sub}
+                    </div>
+                  </div>
+                </div>
+                {i < pipeline.length - 1 && (
+                  <div
+                    aria-hidden="true"
+                    className="mx-0.5 h-px w-5 shrink-0 bg-gradient-to-r from-neon-emerald/50 to-neon-emerald/10"
+                  />
+                )}
+              </div>
+            )
+          })}
+        </div>
+        {/* Scroll hint dots */}
+        <div className="mt-1 flex justify-center gap-1.5" aria-hidden="true">
+          {pipeline.map((step) => (
+            <span key={step.title} className="h-1 w-1 rounded-full bg-neon-emerald/40" />
+          ))}
+        </div>
+      </div>
+
+      {/* Desktop / tablet: original horizontal flow */}
+      <div className="hidden items-center gap-4 sm:flex">
         {pipeline.map((step, i) => {
           const Icon = PIPELINE_ICONS[step.icon] ?? Circle
           return (
-            <div key={step.title} className="flex flex-1 items-center gap-4 sm:flex-col sm:gap-2">
+            <div key={step.title} className="flex flex-1 items-center gap-2">
               <div className="group/step flex flex-col items-center gap-2">
                 <span className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-white/[0.03] transition-all duration-300 group-hover/step:border-neon-emerald/50 group-hover/step:bg-neon-emerald/10">
                   <Icon className="h-5 w-5 text-neon-emerald" />
@@ -64,7 +176,7 @@ function Pipeline() {
                 </div>
               </div>
               {i < pipeline.length - 1 && (
-                <div className="hidden h-px flex-1 bg-gradient-to-r from-neon-emerald/40 to-transparent sm:block" />
+                <div className="h-px flex-1 bg-gradient-to-r from-neon-emerald/40 to-transparent" />
               )}
             </div>
           )
@@ -80,35 +192,45 @@ function ProjectCard({ project }) {
     <TiltCard max={12} glareAccent={accent} className="h-full">
       <motion.div
         layout
-        className="group flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-card/50 p-6 backdrop-blur-sm transition-colors duration-300 hover:border-white/20"
+        className="group relative flex h-full min-w-0 flex-col overflow-hidden rounded-3xl border border-border bg-card/50 p-4 backdrop-blur-sm transition-colors duration-300 hover:border-white/20 sm:p-6"
       >
-        {/* top accent line */}
         <div
           className="absolute inset-x-0 top-0 h-px opacity-60"
           style={{ background: `linear-gradient(90deg, transparent, ${accent}, transparent)` }}
         />
 
-        <TiltLayer depth={30} className="mb-4 flex items-start justify-between">
-          <div>
-            <h3 className="font-display text-2xl font-bold text-ink">{project.name}</h3>
-            <p className="mt-1 text-sm text-muted">{project.tagline}</p>
+        <TiltLayer depth={30} className="mb-3 flex min-w-0 flex-col gap-2 sm:mb-4 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+          <div className="min-w-0 flex-1">
+            <h3 className="font-display text-xl font-bold leading-snug text-ink break-words sm:text-2xl">
+              {project.name}
+            </h3>
+            <p className="mt-1 text-sm leading-relaxed text-muted break-words">{project.tagline}</p>
           </div>
           <span
-            className="whitespace-nowrap rounded-full px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider"
+            className="w-fit shrink-0 rounded-full px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider"
             style={{ background: `${accent}14`, color: accent }}
           >
             {project.status.split('·')[0].trim()}
           </span>
         </TiltLayer>
 
-        <TiltLayer depth={20} className="flex-1">
-          <p className="text-sm leading-relaxed text-muted">{project.description}</p>
+        <TiltLayer depth={20} className="min-w-0 flex-1">
+          <ProjectDescription
+            text={project.description}
+            highlights={project.highlights}
+            accent={accent}
+          />
 
-          <div className="mt-4 grid grid-cols-3 gap-2">
+          <div className="mt-4 grid grid-cols-3 gap-1.5 sm:gap-2">
             {project.metrics.map((m) => (
-              <div key={m.label} className="rounded-xl border border-border bg-white/[0.02] px-2 py-2 text-center">
-                <div className="font-heading text-sm font-semibold text-ink">{m.value}</div>
-                <div className="mt-0.5 font-mono text-[9px] uppercase tracking-wider text-faint">
+              <div
+                key={m.label}
+                className="min-w-0 rounded-xl border border-border bg-white/[0.02] px-1.5 py-2 text-center sm:px-2"
+              >
+                <div className="font-heading text-xs font-semibold text-ink break-words sm:text-sm">
+                  {m.value}
+                </div>
+                <div className="mt-0.5 font-mono text-[8px] uppercase tracking-wider text-faint sm:text-[9px]">
                   {m.label}
                 </div>
               </div>
@@ -116,8 +238,8 @@ function ProjectCard({ project }) {
           </div>
         </TiltLayer>
 
-        <TiltLayer depth={40} className="mt-5">
-          <div className="mb-4 flex flex-wrap gap-1.5">
+        <TiltLayer depth={40} className="mt-4 min-w-0 sm:mt-5">
+          <div className="mb-3 flex flex-wrap gap-1.5 sm:mb-4">
             {project.stack.map((s) => (
               <span
                 key={s}
@@ -127,21 +249,25 @@ function ProjectCard({ project }) {
               </span>
             ))}
           </div>
-          <div className="flex items-center gap-4 border-t border-border pt-4">
-            <a
-              href={project.links.code}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 font-heading text-sm font-medium text-muted transition-colors hover:text-ink"
-            >
-              <Github className="h-4 w-4" /> Code
-            </a>
+          <div className="flex flex-col gap-2 border-t border-border pt-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4 sm:pt-4">
+            {project.links.code ? (
+              <a
+                href={project.links.code}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-border bg-white/[0.02] px-3 font-heading text-sm font-medium text-muted transition-colors hover:text-ink sm:w-auto sm:justify-start sm:rounded-none sm:border-0 sm:bg-transparent sm:px-0 sm:min-h-0"
+              >
+                <Github className="h-4 w-4 shrink-0" /> Code
+              </a>
+            ) : null}
             <a
               href={project.links.demo}
-              className="inline-flex items-center gap-1.5 font-heading text-sm font-medium transition-colors"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-border bg-white/[0.02] px-3 font-heading text-sm font-medium transition-colors sm:min-h-0 sm:w-auto sm:justify-start sm:rounded-none sm:border-0 sm:bg-transparent sm:px-0"
               style={{ color: accent }}
             >
-              <ExternalLink className="h-4 w-4" /> Live Preview
+              <ExternalLink className="h-4 w-4 shrink-0" /> Live Preview
             </a>
           </div>
         </TiltLayer>
@@ -154,14 +280,14 @@ function FeaturedCard({ project }) {
   const accent = getAccent(project.accent)
   return (
     <TiltCard max={8} glareAccent={accent}>
-      <div className="group relative overflow-hidden rounded-[2rem] border border-border bg-card/60 p-8 backdrop-blur-md md:p-12">
+      <div className="group relative min-w-0 overflow-hidden rounded-[1.5rem] border border-border bg-card/60 p-5 backdrop-blur-md sm:rounded-[2rem] sm:p-8 md:p-12">
         <div
           className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full blur-[100px]"
           style={{ background: `${accent}22` }}
         />
-        <div className="relative grid grid-cols-1 gap-8 lg:grid-cols-2 lg:items-center">
-          <div>
-            <TiltLayer depth={25} className="mb-5 flex flex-wrap gap-2">
+        <div className="relative grid grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-2 lg:items-center">
+          <div className="min-w-0">
+            <TiltLayer depth={25} className="mb-4 flex flex-wrap gap-2 sm:mb-5">
               {project.categories.map((c) => (
                 <span
                   key={c}
@@ -171,42 +297,31 @@ function FeaturedCard({ project }) {
                   {c}
                 </span>
               ))}
-              <span className="rounded-full border border-border px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-faint">
+              <span className="rounded-full border border-border px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-faint break-words">
                 {project.status}
               </span>
             </TiltLayer>
 
             <TiltLayer depth={45}>
-              <h3 className="font-display text-4xl font-bold text-ink md:text-5xl">{project.name}</h3>
-              <p className="mt-2 font-heading text-lg text-muted">{project.tagline}</p>
+              <h3 className="font-display text-[1.75rem] font-bold leading-tight text-ink break-words sm:text-4xl md:text-5xl">
+                {project.name}
+              </h3>
+              <p className="mt-2 font-heading text-base text-muted break-words sm:text-lg">
+                {project.tagline}
+              </p>
             </TiltLayer>
 
             <TiltLayer depth={20}>
-              <p className="mt-5 text-base leading-relaxed text-muted">{project.description}</p>
-              <ul className="mt-6 space-y-3">
-                {project.highlights.map((h) => (
-                  <li key={h} className="flex gap-3 text-sm leading-relaxed text-muted">
-                    <span
-                      className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full"
-                      style={{ background: accent, boxShadow: `0 0 10px ${accent}` }}
-                    />
-                    {h}
-                  </li>
-                ))}
-              </ul>
+              <ProjectDescription
+                text={project.description}
+                highlights={project.highlights}
+                accent={accent}
+                className="mt-4 sm:mt-5"
+              />
             </TiltLayer>
 
-            <TiltLayer depth={35} className="mt-8 flex flex-wrap items-center gap-4">
-              <a
-                href={project.links.code}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-xl px-5 py-3 font-heading text-sm font-semibold text-base"
-                style={{ background: accent }}
-              >
-                View Case Study <ArrowUpRight className="h-4 w-4" />
-              </a>
-              <div className="flex flex-wrap gap-1.5">
+            <TiltLayer depth={35} className="mt-6 min-w-0 sm:mt-8">
+              <div className="mb-3 flex flex-wrap gap-1.5 sm:mb-4">
                 {project.stack.map((s) => (
                   <span
                     key={s}
@@ -216,10 +331,31 @@ function FeaturedCard({ project }) {
                   </span>
                 ))}
               </div>
+              <div className="flex flex-col gap-2 border-t border-border pt-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4 sm:pt-4">
+                {project.links.code ? (
+                  <a
+                    href={project.links.code}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-border bg-white/[0.02] px-3 font-heading text-sm font-medium text-muted transition-colors hover:text-ink sm:w-auto sm:justify-start sm:rounded-none sm:border-0 sm:bg-transparent sm:px-0 sm:min-h-0"
+                  >
+                    <Github className="h-4 w-4 shrink-0" /> Code
+                  </a>
+                ) : null}
+                <a
+                  href={project.links.demo}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-border bg-white/[0.02] px-3 font-heading text-sm font-medium transition-colors sm:min-h-0 sm:w-auto sm:justify-start sm:rounded-none sm:border-0 sm:bg-transparent sm:px-0"
+                  style={{ color: accent }}
+                >
+                  <ExternalLink className="h-4 w-4 shrink-0" /> Live Preview
+                </a>
+              </div>
             </TiltLayer>
           </div>
 
-          <TiltLayer depth={30}>
+          <TiltLayer depth={30} className="min-w-0">
             <Pipeline />
           </TiltLayer>
         </div>
@@ -241,7 +377,7 @@ export default function Projects() {
   const featuredVisible = filter === 'All' || featured?.categories.includes(filter)
 
   return (
-    <section id="projects" className="relative mx-auto max-w-6xl scroll-mt-24 px-6 py-24 md:py-32">
+    <section id="projects" className="relative mx-auto max-w-6xl scroll-mt-24 px-5 py-20 sm:px-6 sm:py-24 md:py-32">
       <SectionHeading
         eyebrow="Selected Work"
         title={
@@ -255,7 +391,7 @@ export default function Projects() {
 
       {/* Filters */}
       <Reveal>
-        <div className="mb-10 flex flex-wrap gap-2.5">
+        <div className="-mx-1 mb-8 flex gap-2 overflow-x-auto px-1 pb-1 scrollbar-hide sm:mb-10 sm:flex-wrap sm:overflow-visible sm:pb-0">
           {projectFilters.map((f) => (
             <FilterButton
               key={f.value}
@@ -277,15 +413,15 @@ export default function Projects() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.98 }}
             transition={{ duration: 0.5 }}
-            className="mb-6"
+            className="mb-5 sm:mb-6"
           >
             <FeaturedCard project={featured} />
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Grid */}
-      <motion.div layout className="grid grid-cols-1 gap-6 md:grid-cols-2">
+      {/* Grid — single column mobile, 2-col from md (desktop intact) */}
+      <motion.div layout className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
         <AnimatePresence mode="popLayout">
           {filtered.map((p) => (
             <motion.div
@@ -295,6 +431,7 @@ export default function Projects() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96 }}
               transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+              className="min-w-0"
             >
               <ProjectCard project={p} />
             </motion.div>

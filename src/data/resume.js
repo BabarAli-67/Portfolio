@@ -149,7 +149,10 @@ export const projects = [
       { label: 'Geo Radius', value: '10 km' },
       { label: 'Similarity', value: '≥ 0.70' },
     ],
-    links: { demo: '#', code: 'https://github.com/BabarAli-67' },
+    links: {
+      demo: 'https://fyp-hawalay-client.vercel.app/login',
+      code: 'https://github.com/BabarAli-67/fyp-hawalay',
+    },
   },
   {
     id: 'swiftdrop',
@@ -195,7 +198,7 @@ export const projects = [
       { label: 'Layout Shift', value: 'Zero' },
       { label: 'Tier', value: 'Class G5' },
     ],
-    links: { demo: '#', code: 'https://github.com/BabarAli-67' },
+    links: { demo: 'https://www.alhadidtec.com/' },
   },
   {
     id: 'streamcraft',
@@ -278,14 +281,16 @@ export const education = {
   location: 'Lahore, Punjab, Pakistan',
   period: 'Oct 2022 – Jul 2026',
   coursework: [
-    'Data Structures & Algorithms',
-    'Object-Oriented Programming',
+    'Object-Oriented Programming (OOP)',
+    'Data Structures & Algorithms (DSA)',
     'Database Systems',
     'Computer Networks',
     'Operating Systems',
     'Software Engineering',
     'Data Science',
     'Machine Learning',
+    'Computer Graphics',
+    'Web Technologies',
   ],
 }
 
