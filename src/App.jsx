@@ -1,5 +1,6 @@
 import { motion, useScroll, useSpring } from 'framer-motion'
 import DeferredParticles from './components/DeferredParticles'
+import Preloader from './components/Preloader'
 import CursorSpotlight from './components/CursorSpotlight'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
@@ -17,7 +18,9 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen">
-      {/* Particles: client-only + deferred — density/visuals unchanged */}
+      <Preloader />
+
+      {/* Particles warm up under the preloader — density unchanged */}
       <DeferredParticles />
       <div
         aria-hidden="true"

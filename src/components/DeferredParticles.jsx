@@ -20,15 +20,13 @@ export default function DeferredParticles() {
       if (!cancelled) setMounted(true)
     }
 
-    // Wait for the browser to commit the first contentful frame, then idle.
+    // Under the preloader we can warm the canvas ASAP without risking flicker.
     const raf1 = requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (typeof window.requestIdleCallback === 'function') {
-          idleId = window.requestIdleCallback(enable, { timeout: 800 })
-        } else {
-          timeoutId = window.setTimeout(enable, 100)
-        }
-      })
+      if (typeof window.requestIdleCallback === 'function') {
+        idleId = window.requestIdleCallback(enable, { timeout: 200 })
+      } else {
+        timeoutId = window.setTimeout(enable, 50)
+      }
     })
 
     return () => {
